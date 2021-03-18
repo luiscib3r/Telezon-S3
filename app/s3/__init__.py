@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.requests import Request
-from starlette.responses import Response, StreamingResponse
+from starlette.responses import Response, StreamingResponse, JSONResponse
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 
 from app.db.mongodb import get_database
@@ -104,7 +104,7 @@ async def download_file(
     return StreamingResponse(result_file, media_type=blob.content_type)
 
 
-@router.head('{bucket_name}/{path}')
+@router.head('/{bucket_name}/{path}')
 async def check_file(
         bucket_name: str,
         path: str,
@@ -118,6 +118,9 @@ async def check_file(
     blobs = await crud_get_all_blobs(db, filters)
 
     if len(blobs) > 0:
-        return Response('')
+        blob = blobs[0]
+        return JSONResponse({
+            'ContentLength': blob.size
+        })
     else:
         return Response(status_code=HTTP_404_NOT_FOUND)
