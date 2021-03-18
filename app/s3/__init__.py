@@ -104,7 +104,7 @@ async def download_file(
     return StreamingResponse(result_file, media_type=blob.content_type)
 
 
-@router.head('{bucked_name}/{path}')
+@router.head('{bucket_name}/{path}')
 async def check_file(
         bucket_name: str,
         path: str,
