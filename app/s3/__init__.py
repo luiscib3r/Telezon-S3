@@ -75,12 +75,6 @@ async def download_file(
 ):
     bucket = await crud_get_bucket_by_name(db, bucket_name)
 
-    print(request.headers)
-
-    acc = request.headers.get('authorization').split('=')[1].split('/')[0]
-
-    print(acc)
-
     if not bucket:
         return Response(
             status_code=HTTP_404_NOT_FOUND,
