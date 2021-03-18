@@ -1,5 +1,6 @@
 from typing import List
 
+from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.core.config import DATABASE_NAME
