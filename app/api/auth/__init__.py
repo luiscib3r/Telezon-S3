@@ -6,9 +6,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.status import HTTP_400_BAD_REQUEST
 
 from app.core.jwt import create_access_token, get_current_user
-from app.crud.shortcuts import check_free_username_and_email
+from app.crud.bucket import crud_create_bucket
+from app.crud.shortcuts import check_free_username_and_email, check_free_bucket_name
 from app.crud.user import crud_get_user_by_username, crud_create_user
 from app.db.mongodb import get_database
+from app.models.bucket import BucketInCreate
 from app.models.token import Token
 from app.models.user import User, UserInCreate
 
@@ -44,6 +46,17 @@ async def signup(
 ):
     await check_free_username_and_email(db, user.username, user.email)
     new_user = await crud_create_user(db, user)
+
+    # create bucket to new user
+    try:
+        await check_free_bucket_name(db, user.username)
+        bucket = BucketInCreate(
+            name=user.username,
+            owner_username=user.username,
+        )
+        await crud_create_bucket(db, bucket, User(**new_user.dict()))
+    except:
+        pass
 
     return new_user
 

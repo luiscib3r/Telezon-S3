@@ -6,9 +6,11 @@ from starlette.status import HTTP_404_NOT_FOUND
 
 from app.api.auth.utils import check_role_admin
 from app.core.jwt import get_current_user
+from app.crud.bucket import crud_create_bucket
 from app.db.mongodb import get_database
+from app.models.bucket import BucketInCreate
 from app.models.user import User, UserInCreate, UserFilterParams, UserInUpdate
-from app.crud.shortcuts import check_free_username_and_email
+from app.crud.shortcuts import check_free_username_and_email, check_free_bucket_name
 from app.crud.user import crud_get_all_users, crud_create_user, crud_get_user_by_username, crud_update_user, \
     crud_delete_user
 
@@ -64,6 +66,17 @@ async def create_user(
     await check_free_username_and_email(db, user.username, user.email)
 
     new_user = await crud_create_user(db, user)
+
+    # create bucket to new user
+    try:
+        await check_free_bucket_name(db, user.username)
+        bucket = BucketInCreate(
+            name=user.username,
+            owner_username=user.username,
+        )
+        await crud_create_bucket(db, bucket, current_user)
+    except:
+        pass
 
     return new_user
 
