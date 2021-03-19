@@ -1,4 +1,4 @@
 from app.storage.storage import Storage
-from app.storage.telegram import TelegramStorage
+from app.storage.telegram import TelegramBotStorage
 
-storage: Storage = TelegramStorage()
+storage: Storage = TelegramBotStorage()
