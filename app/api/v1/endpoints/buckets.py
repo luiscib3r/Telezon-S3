@@ -1,15 +1,15 @@
 from typing import List
 
-from fastapi import APIRouter, Query, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException, Body
 from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.status import HTTP_404_NOT_FOUND
 
 from app.api.auth.utils import check_role_admin
 from app.core.jwt import get_current_user
 from app.db.mongodb import get_database
-from app.models.bucket import Bucket, BucketFilterParams, BucketInCreate, BucketInDb
+from app.models.bucket import Bucket, BucketFilterParams, BucketInCreate, BucketInDb, BucketInUpdate
 from app.models.user import User
-from app.crud.bucket import crud_get_all_buckets, crud_get_bucket_by_name, crud_create_bucket
+from app.crud.bucket import crud_get_all_buckets, crud_get_bucket_by_name, crud_create_bucket, crud_update_bucket
 from app.crud.shortcuts import check_free_bucket_name
 
 router = APIRouter(prefix='/buckets', tags=['Buckets'])
@@ -64,3 +64,17 @@ async def create_bucket(
     new_bucket = await crud_create_bucket(db, bucket, current_user)
 
     return new_bucket
+
+
+@router.put('/{bucket_name}')
+async def update_bucket(
+        bucket_name: str,
+        bucket: BucketInUpdate = Body(...),
+        db: AsyncIOMotorClient = Depends(get_database),
+        current_user: User = Depends(get_current_user)
+):
+    check_role_admin(current_user)
+
+    response_bucket = await crud_update_bucket(db, bucket_name, bucket)
+
+    return response_bucket

@@ -96,10 +96,9 @@ async def crud_update_user(db: AsyncIOMotorClient, username: str, user: UserInUp
     if user.password:
         data_user.change_password(user.password)
 
-    updated_at = await db[DATABASE_NAME][COLLECTION] \
+    await db[DATABASE_NAME][COLLECTION] \
         .update_one({"username": data_user.username}, {'$set': data_user.dict()})
 
-    data_user.updated_at = updated_at
     return UserInDb(**data_user.dict())
 
 

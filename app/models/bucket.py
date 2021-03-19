@@ -24,4 +24,8 @@ class Bucket(BucketBase, DateTimeModelMixin, ):
 
 
 class BucketInCreate(BucketBase):
-    pass
+    owner_username: str = ''
+
+
+class BucketInUpdate(BaseModel):
+    owner_username: str
