@@ -26,3 +26,7 @@ API_KEY = os.getenv('API_KEY')
 
 TOKEN = os.getenv('BOT_TOKEN')
 CID = os.getenv('CID')
+
+TELEGRAM_API_ID = os.getenv('TELEGRAM_API_ID')
+TELEGRAM_API_HASH = os.getenv('TELEGRAM_API_HASH')
+SESSION_STRING = os.getenv('SESSION_STRING')

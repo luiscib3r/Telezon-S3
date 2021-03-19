@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.param_functions import File
 from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.requests import Request
 from starlette.responses import Response, StreamingResponse, JSONResponse
@@ -58,7 +59,7 @@ async def upload_file(
     blob.content_type = request.headers.get('content-type', '')
     blob.size = request.headers['content-length']
     body = await request.body()
-    file_id = storage.put_file(body, path)
+    file_id = await storage.put_file(body, path)
     blob.file = file_id
 
     await crud_create_blob(db, blob, bucket_name, update)
@@ -99,7 +100,7 @@ async def download_file(
 
     blob = blobs[0]
 
-    result_file = storage.get_file(blob.file)
+    result_file = await storage.get_file(blob.file)
 
     return StreamingResponse(result_file, media_type=blob.content_type)
 

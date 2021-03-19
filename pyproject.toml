@@ -17,6 +17,8 @@ python-dotenv = "^0.15.0"
 motor = "^2.3.1"
 python-telegram-bot = "^13.4.1"
 python-multipart = "^0.0.5"
+Pyrogram = "^1.1.13"
+TgCrypto = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
 

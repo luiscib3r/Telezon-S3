@@ -25,7 +25,7 @@ s3 = boto3.client(
     endpoint_url=telezon_s3_url
 )
 
-s3.upload_file('bucket_name', 'filename_example.jpg', 'id_name_for_file')
+s3.upload_file('filename_example.jpg', 'bucket_name', 'id_name_for_file')
 
 s3.download_file('bucket_name', 'id_name_for_file', 'downloaded_filename.jpg')
 ```
