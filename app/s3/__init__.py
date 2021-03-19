@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from fastapi.param_functions import File
 from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.requests import Request
 from starlette.responses import Response, StreamingResponse, JSONResponse
