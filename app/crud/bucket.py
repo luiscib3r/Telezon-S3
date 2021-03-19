@@ -51,6 +51,10 @@ async def crud_get_all_buckets(db: AsyncIOMotorClient, filters: BucketFilterPara
         names = filters.name.replace(', ', ',').split(',')
         base_query['name'] = {'$in': names}
 
+    if filters.owner_username:
+        owners = filters.owner_username.replace(', ', ',').split(',')
+        base_query['owner_username'] = {'$in': owners}
+
     bucket_docs = db[DATABASE_NAME][COLLECTION].aggregate([
         {'$match': base_query},
         {'$limit': filters.offset + filters.limit},

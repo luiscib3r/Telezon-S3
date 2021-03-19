@@ -6,6 +6,7 @@ from app.models.user import User
 
 class BucketFilterParams(BaseModel):
     name: str = ''
+    owner_username = ''
     limit: int = 20
     offset: int = 0
 

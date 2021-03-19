@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, Depends, HTTPException, Body
 from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.status import HTTP_404_NOT_FOUND
 
-from app.api.auth.utils import check_role_admin
+from app.api.auth.utils import check_role_admin, is_admin
 from app.core.jwt import get_current_user
 from app.db.mongodb import get_database
 from app.models.bucket import Bucket, BucketFilterParams, BucketInCreate, BucketInDb, BucketInUpdate
@@ -18,14 +18,18 @@ router = APIRouter(prefix='/buckets', tags=['Buckets'])
 @router.get('/', response_model=List[Bucket])
 async def get_all_buckets(
         name: str = '',
+        owner_username: str = '',
         limit: int = Query(20),
         offset: int = Query(0),
         db: AsyncIOMotorClient = Depends(get_database),
         current_user: User = Depends(get_current_user),
 ):
-    check_role_admin(current_user)
+    if not is_admin(current_user):
+        owner_username = current_user.username
+
     filters = BucketFilterParams(
         name=name,
+        owner_username=owner_username,
         limit=limit,
         offset=offset
     )
