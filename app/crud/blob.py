@@ -57,21 +57,8 @@ async def crud_get_all_blobs(db: AsyncIOMotorClient, filters: BlobFilterParams) 
     return blobs
 
 
-async def crud_get_blob_by_path(db: AsyncIOMotorClient, path: str) -> Blob:
-    base_query = {'path': {'$in': [path]}}
-    blob_docs = db[DATABASE_NAME][COLLECTION].aggregate([
-        {'$match': base_query},
-        aggregate_bucket,
-        aggregate_owner,
-        {'$unwind': {'path': '$bucket'}},
-        {'$unwind': {'path': '$owner'}}
-    ])
-
-    async for row in blob_docs:
-        return Blob(**row)
-
-
-async def crud_create_blob(db: AsyncIOMotorClient, blob: BlobInCreate, bucket_name: str, update: bool = False) -> BlobInDb:
+async def crud_create_blob(db: AsyncIOMotorClient, blob: BlobInCreate, bucket_name: str,
+                           update: bool = False) -> BlobInDb:
     data_blob = BlobInDb(**blob.dict())
     data_blob.bucket_name = bucket_name
 
