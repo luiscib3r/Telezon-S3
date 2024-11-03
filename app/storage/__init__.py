@@ -4,4 +4,7 @@ from app.storage.telegram import (  # noqa: F401
     TelegramBotStorage,
 )
 
-storage: Storage = TelegramBotStorage()
+# You can use TelegramBotStorage or TelegramAccountStorage
+# TelegramBotStorage uses telegram bot api through python-telegram-bot
+# TelegramAccountStorage uses MTProto through pyrogram
+storage: Storage = TelegramAccountStorage()
