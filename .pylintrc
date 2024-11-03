@@ -1,0 +1,2 @@
+[MASTER]
+disable=missing-docstring,too-few-public-methods,broad-exception-caught,invalid-name,too-many-arguments

@@ -1,8 +1,6 @@
-from telegram.ext import Updater, CallbackContext, MessageHandler, Filters
-from telegram import Update
+from telegram.ext import Application
 
 from app.core.config import TOKEN
 
-
-updater = Updater(TOKEN, use_context=True)
+updater = Application.builder().token(TOKEN).build()
 bot = updater.bot

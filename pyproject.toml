@@ -2,26 +2,30 @@
 name = "telezons3"
 version = "0.1.0"
 description = ""
-authors = ["Luis Correa <correaleyval@gmail.com>"]
+authors = ["Luis Ciber <luisciber640@gmail.com>"]
 license = "MIT"
+readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.8"
-fastapi = "^0.63.0"
-gunicorn = "^20.0.4"
-uvicorn = {extras = ["standard"], version = "^0.13.4"}
-pydantic = {extras = ["email"], version = "^1.8.1"}
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
-PyJWT = "^2.0.1"
-python-dotenv = "^0.15.0"
-motor = "^2.3.1"
-python-telegram-bot = "^13.4.1"
-python-multipart = "^0.0.5"
-Pyrogram = "^1.1.13"
-TgCrypto = "^1.2.2"
+python = "^3.12"
+fastapi = { extras = ["standard"], version = "^0.115.4" }
+pydantic = { extras = ["email"], version = "^2.9.2" }
+passlib = { extras = ["bcrypt"], version = "^1.7.4" }
+pyjwt = "^2.9.0"
+python-dotenv = "^1.0.1"
+motor = "^3.6.0"
+python-telegram-bot = "^21.6"
+python-multipart = "^0.0.17"
+pyrogram = "^2.0.106"
+tgcrypto = "^1.2.5"
 
-[tool.poetry.dev-dependencies]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.7.2"
+boto3 = "^1.35.54"
+typer = "^0.12.5"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

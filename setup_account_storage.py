@@ -21,7 +21,7 @@ if __name__ == '__main__':
     client = Client(SESSION_STRING, TELEGRAM_API_ID, TELEGRAM_API_HASH)
 
     @client.on_message()
-    def cid_handler(client: Client, message: Message):
+    def cid_handler(_: Client, message: Message):
         print(f'CHANNEL ID {message.chat.id}')
 
     print('Send some text in your channel and save channel id in CID environment variable')

@@ -5,8 +5,8 @@ from pydantic import BaseModel, EmailStr
 from app.core.security import verify_password, generate_salt, get_password_hash
 from app.models.db_model import DateTimeModelMixin
 
-ADMIN_ROLE = 'admin'
-USER_ROLE = 'user'
+ADMIN_ROLE = "admin"
+USER_ROLE = "user"
 
 
 class UserFilterParams(BaseModel):
@@ -19,15 +19,15 @@ class UserFilterParams(BaseModel):
 class UserBase(BaseModel):
     username: str
     email: EmailStr
-    description: Optional[str] = ''
+    description: Optional[str] = ""
     role: str = USER_ROLE
-    access_key_id: str = ''
-    secret_key: str = ''
+    access_key_id: str = ""
+    secret_key: str = ""
 
 
 class UserInDb(UserBase, DateTimeModelMixin):
-    salt: str = ''
-    hashed_password: str = ''
+    salt: str = ""
+    hashed_password: str = ""
 
     def check_password(self, password: str):
         return verify_password(self.salt + password, self.hashed_password)

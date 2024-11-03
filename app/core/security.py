@@ -1,7 +1,7 @@
 import bcrypt
 from passlib.context import CryptContext
 
-pws_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+pws_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def generate_salt() -> str:

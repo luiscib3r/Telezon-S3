@@ -1,24 +1,47 @@
-#!/usr/bin/env python
+# pylint: disable=invalid-name,consider-using-f-string,attribute-defined-outside-init
+
 from __future__ import absolute_import
+
+import hmac
 from collections import OrderedDict
 from datetime import datetime, timedelta
-from .exc import InvalidSignatureError
 from hashlib import sha256
-import hmac
+from io import BytesIO
 from re import compile as re_compile
-from six import (
-    BytesIO, binary_type, indexbytes, int2byte, iterbytes, iteritems,
-    iterkeys, string_types)
-from six.moves import cStringIO
-from six.moves.urllib.parse import unquote as url_unquote
 from string import ascii_letters, digits
+from urllib.parse import unquote as url_unquote
+
+from .exc import InvalidSignatureError
+
+
+def iterbytes(b):
+    return iter(b)
+
+
+def indexbytes(b, i):
+    return b[i]
+
+
+def int2byte(i):
+    return bytes((i,))
+
+
+def iteritems(d):
+    return d.items()
+
+
+def iterkeys(d):
+    return d.keys()
+
+
+binary_type = bytes
+string_types = str
 
 # Algorithm for AWS SigV4
 AWS4_HMAC_SHA256 = "AWS4-HMAC-SHA256"
 
 # Unreserved bytes from RFC 3986.
-_rfc3986_unreserved = set(iterbytes((ascii_letters + digits + "-._~")
-                                    .encode("utf-8")))
+_rfc3986_unreserved = set(iterbytes((ascii_letters + digits + "-._~").encode("utf-8")))
 
 # ASCII code for '%'
 _ascii_percent = ord(b"%")
@@ -52,26 +75,44 @@ _iso8601_timestamp_regex = re_compile(
     r"(?P<hour>[01][0-9]|2[0-3])"
     r"(?P<minute>[0-5][0-9])"
     r"(?P<second>[0-5][0-9]|6[01])"
-    r"Z$")
+    r"Z$"
+)
 
 # Match for multiple slashes
 _multislash = re_compile(r"//+")
 
+
 class AWSSigV4Verifier(object):
-    def __init__(self, request_method, uri_path, query_string, headers,
-                 body, region, service, key_mapping, timestamp_mismatch=60):
+    def __init__(
+        self,
+        request_method,
+        uri_path,
+        query_string,
+        headers,
+        body,
+        region,
+        service,
+        key_mapping,
+        timestamp_mismatch=60,
+    ):
         """
+        # pylint: disable=line-too-long
         AWSSigV4Verifier(request_method, uri_path, query_string, headers, body, region, service, key_mapping, timestamp_mismatch=60)
 
         Create a new AWSSigV4Verifier instance.
         """
-        super(AWSSigV4Verifier, self).__init__()
+        super()
 
-        l = locals()
-        
+        l = locals()  # noqa: E741
+
         # Verify string parameters
-        for param in ["request_method", "uri_path", "query_string", "region",
-                      "service"]:
+        for param in [
+            "request_method",
+            "uri_path",
+            "query_string",
+            "region",
+            "service",
+        ]:
             if not isinstance(l[param], string_types):
                 raise TypeError("Expected %s to be a string" % param)
 
@@ -80,12 +121,13 @@ class AWSSigV4Verifier(object):
 
         for key, value in list(iteritems(headers)):
             if not isinstance(key, string_types):
-                raise TypeError("Invalid key (not a string) in headers: %r" %
-                                key)
+                raise TypeError("Invalid key (not a string) in headers: %r" % key)
 
             if not isinstance(value, string_types):
-                raise TypeError("Invalid value type (not a string) in "
-                                "header %s: %r" % (key, value))
+                raise TypeError(
+                    "Invalid value type (not a string) in "
+                    "header %s: %r" % (key, value)
+                )
 
             headers[key] = value
 
@@ -107,8 +149,7 @@ class AWSSigV4Verifier(object):
         """
         result = getattr(self, "_canonical_uri_path", None)
         if result is None:
-            result = self._canonical_uri_path = get_canonical_uri_path(
-                self.uri_path)
+            result = self._canonical_uri_path = get_canonical_uri_path(self.uri_path)
         return result
 
     @property
@@ -120,7 +161,8 @@ class AWSSigV4Verifier(object):
         result = getattr(self, "_query_parameters", None)
         if result is None:
             result = self._query_parameters = normalize_query_parameters(
-                self.query_string)
+                self.query_string
+            )
         return result
 
     @property
@@ -129,14 +171,14 @@ class AWSSigV4Verifier(object):
         The canonical query string from the query parameters.
 
         This takes the query string from the request and orders the parameters
-        in 
+        in
         """
         results = []
         for key, values in iteritems(self.query_parameters):
             # Don't include the signature itself.
             if key == _x_amz_signature:
                 continue
-            
+
             for value in values:
                 results.append("%s=%s" % (key, value))
 
@@ -154,25 +196,27 @@ class AWSSigV4Verifier(object):
             auth = self.headers.get(_authorization)
             if auth is None:
                 raise AttributeError("Authorization header is not present")
-            
+
             if not auth.startswith(AWS4_HMAC_SHA256 + " "):
                 raise AttributeError("Authorization header is not AWS SigV4")
 
             result = {}
-            for parameter in auth[len(AWS4_HMAC_SHA256)+1:].split(","):
+            for parameter in auth[len(AWS4_HMAC_SHA256) + 1 :].split(","):
                 parameter = parameter.strip()
                 try:
                     key, value = parameter.split("=", 1)
-                except ValueError:
+                except ValueError as exc:
                     raise AttributeError(
-                        "Invalid Authorization header: missing '='")
+                        "Invalid Authorization header: missing '='"
+                    ) from exc
 
                 if key in result:
                     raise AttributeError(
-                        "Invalid Authorization header: duplicate key %r" % key)
-                
+                        "Invalid Authorization header: duplicate key %r" % key
+                    )
+
                 result[key] = value
-            
+
             self._authorization_header_parameters = result
         return result
 
@@ -187,8 +231,7 @@ class AWSSigV4Verifier(object):
             signed_headers = url_unquote(signed_headers[0])
         else:
             # Get this from the authentication header
-            signed_headers = self.authorization_header_parameters[
-                _signedheaders]
+            signed_headers = self.authorization_header_parameters[_signedheaders]
 
         # Header names are separated by semicolons.
         parts = signed_headers.split(";")
@@ -197,12 +240,14 @@ class AWSSigV4Verifier(object):
         # reasons, we consider it an error if it isn't.
         canonicalized = sorted([sh.lower() for sh in parts])
         if parts != canonicalized:
-            raise AttributeError("SignedHeaders is not canonicalized: %r" %
-                                 (signed_headers,))
+            raise AttributeError(
+                "SignedHeaders is not canonicalized: %r" % (signed_headers,)
+            )
 
         # Allow iteration in-order.
-        return OrderedDict([(header, self.headers[header])
-                            for header in signed_headers.split(";")])
+        return OrderedDict(
+            [(header, self.headers[header]) for header in signed_headers.split(";")]
+        )
 
     @property
     def request_date(self):
@@ -237,14 +282,16 @@ class AWSSigV4Verifier(object):
                 # This isn't really valid -- seems to be a bug in the AWS
                 # documentation.
                 if _iso8601_timestamp_regex.match(date):
-                    amz_date = date # pragma: nocover
+                    amz_date = date  # pragma: nocover
                 else:
                     # Parse this as an HTTP date and reformulate it.
-                    amz_date = (datetime.strptime(date, _http_date_format)
-                                .strftime("%Y%m%dT%H%M%SZ"))
+                    amz_date = datetime.strptime(date, _http_date_format).strftime(
+                        "%Y%m%dT%H%M%SZ"
+                    )
         if not _iso8601_timestamp_regex.match(amz_date):
-            raise AttributeError("X-Amz-Date parameter is not a valid ISO8601 "
-                                 "string: %r" % amz_date)
+            raise AttributeError(
+                "X-Amz-Date parameter is not a valid ISO8601 " "string: %r" % amz_date
+            )
 
         return amz_date
 
@@ -253,8 +300,15 @@ class AWSSigV4Verifier(object):
         """
         The scope of the credentials to use.
         """
-        return (self.request_date + "/" + self.region + "/" + self.service +
-                "/" + _aws4_request)
+        return (
+            self.request_date
+            + "/"
+            + self.region
+            + "/"
+            + self.service
+            + "/"
+            + _aws4_request
+        )
 
     @property
     def access_key(self):
@@ -274,12 +328,14 @@ class AWSSigV4Verifier(object):
                 raise AttributeError("Credential was not passed in the request")
         try:
             key, scope = credential.split("/", 1)
-        except ValueError:
-            raise AttributeError("Invalid request credential: %r" % credential)
+        except ValueError as exc:
+            raise AttributeError("Invalid request credential: %r" % credential) from exc
 
         if scope != self.credential_scope:
-            raise AttributeError("Incorrect credential scope: %r (wanted %r)" %
-                                 (scope, self.credential_scope))
+            raise AttributeError(
+                "Incorrect credential scope: %r (wanted %r)"
+                % (scope, self.credential_scope)
+            )
 
         return key
 
@@ -295,7 +351,7 @@ class AWSSigV4Verifier(object):
             signature = self.authorization_header_parameters.get(_signature)
             if signature is None:
                 raise AttributeError("Signature was not passed in the request")
-            
+
         return signature
 
     @property
@@ -313,31 +369,42 @@ class AWSSigV4Verifier(object):
             sha256(body).hexdigest()
         """
         signed_headers = self.signed_headers
-        header_lines = "".join(
-            ["%s:%s\n" % item for item in iteritems(signed_headers)])
+        header_lines = "".join(["%s:%s\n" % item for item in iteritems(signed_headers)])
         header_keys = ";".join([key for key in iterkeys(self.signed_headers)])
         # Payload not signed if transfered securely via HTTPS
-        if self.headers.get('x-amz-content-sha256') == 'UNSIGNED-PAYLOAD':
-            hashed_payload = 'UNSIGNED-PAYLOAD'
+        if self.headers.get("x-amz-content-sha256") == "UNSIGNED-PAYLOAD":
+            hashed_payload = "UNSIGNED-PAYLOAD"
         else:
             hashed_payload = sha256(self.body).hexdigest()
 
-        return (self.request_method + "\n" +
-                self.canonical_uri_path + "\n" +
-                self.canonical_query_string + "\n" +
-                header_lines + "\n" +
-                header_keys + "\n" +
-                hashed_payload)
+        return (
+            self.request_method
+            + "\n"
+            + self.canonical_uri_path
+            + "\n"
+            + self.canonical_query_string
+            + "\n"
+            + header_lines
+            + "\n"
+            + header_keys
+            + "\n"
+            + hashed_payload
+        )
 
     @property
     def string_to_sign(self):
         """
         The AWS SigV4 string being signed.
         """
-        return (AWS4_HMAC_SHA256 + "\n" +
-                self.request_timestamp + "\n" +
-                self.credential_scope + "\n" +
-                sha256(self.canonical_request.encode("utf-8")).hexdigest())
+        return (
+            AWS4_HMAC_SHA256
+            + "\n"
+            + self.request_timestamp
+            + "\n"
+            + self.credential_scope
+            + "\n"
+            + sha256(self.canonical_request.encode("utf-8")).hexdigest()
+        )
 
     @property
     def expected_signature(self):
@@ -345,16 +412,14 @@ class AWSSigV4Verifier(object):
         The AWS SigV4 signature expected from the request.
         """
         k_secret = b"AWS4" + self.key_mapping[self.access_key].encode("utf-8")
-        k_date = hmac.new(k_secret, self.request_date.encode("utf-8"),
-                          sha256).digest()
-        k_region = hmac.new(k_date, self.region.encode("utf-8"),
-                            sha256).digest()
-        k_service = hmac.new(k_region, self.service.encode("utf-8"),
-                             sha256).digest()
+        k_date = hmac.new(k_secret, self.request_date.encode("utf-8"), sha256).digest()
+        k_region = hmac.new(k_date, self.region.encode("utf-8"), sha256).digest()
+        k_service = hmac.new(k_region, self.service.encode("utf-8"), sha256).digest()
         k_signing = hmac.new(k_service, _aws4_request_bytes, sha256).digest()
 
-        return hmac.new(k_signing, self.string_to_sign.encode("utf-8"),
-                        sha256).hexdigest()
+        return hmac.new(
+            k_signing, self.string_to_sign.encode("utf-8"), sha256
+        ).hexdigest()
 
     def verify(self):
         """
@@ -380,12 +445,14 @@ class AWSSigV4Verifier(object):
 
             if self.expected_signature != self.request_signature:
                 raise InvalidSignatureError(
-                    "Signature mismatch: expected %r, got %r" % (
-                        self.expected_signature, self.request_signature))
+                    "Signature mismatch: expected %r, got %r"
+                    % (self.expected_signature, self.request_signature)
+                )
         except (AttributeError, KeyError, ValueError) as e:
-            raise InvalidSignatureError(str(e))
+            raise InvalidSignatureError(str(e)) from e
 
         return True
+
 
 def normalize_uri_path_component(path_component):
     """
@@ -414,21 +481,21 @@ def normalize_uri_path_component(path_component):
         if c in _rfc3986_unreserved:
             result.write(int2byte(c))
             i += 1
-        elif c == _ascii_percent: # percent, '%', 0x25, 37
+        elif c == _ascii_percent:  # percent, '%', 0x25, 37
             if i + 2 >= len(path_component):
                 result.write(b"%25")
                 i += 1
                 continue
             try:
-                value = int(path_component[i+1:i+3], 16)
-            except ValueError:
-                raise ValueError("Invalid %% encoding at position %d" % i)
-            
+                value = int(path_component[i + 1 : i + 3], 16)
+            except ValueError as exc:
+                raise ValueError("Invalid %% encoding at position %d" % i) from exc
+
             if value in _rfc3986_unreserved:
                 result.write(int2byte(value))
             else:
                 result.write(b"%%%02X" % value)
-            
+
             i += 3
         elif c == _ascii_plus:
             # Plus-encoded space.  Convert this to %20.
@@ -437,11 +504,12 @@ def normalize_uri_path_component(path_component):
         else:
             result.write(b"%%%02X" % c)
             i += 1
-    
+
     result = result.getvalue()
     if not isinstance(result, string_types):
         result = str(result, "utf-8")
     return result
+
 
 def get_canonical_uri_path(uri_path):
     """
@@ -466,7 +534,7 @@ def get_canonical_uri_path(uri_path):
     # Replace double slashes; this makes it easier to handle slashes at the
     # end.
     uri_path = _multislash.sub("/", uri_path)
-    
+
     # Examine each path component for relative directories.
     components = uri_path.split("/")[1:]
     i = 0
@@ -474,7 +542,7 @@ def get_canonical_uri_path(uri_path):
         # Fix % encodings.
         component = normalize_uri_path_component(components[i])
         components[i] = component
-        
+
         if components[i] == ".":
             # Relative current directory.  Remove this.
             del components[i]
@@ -487,7 +555,7 @@ def get_canonical_uri_path(uri_path):
             if i == 0:
                 # Not allowed at the beginning!
                 raise ValueError("URI path attempts to go beyond root")
-            del components[i-1:i+1]
+            del components[i - 1 : i + 1]
 
             # Since we've deleted two components, we need to back up one to
             # examine what's now the next component.
@@ -495,8 +563,9 @@ def get_canonical_uri_path(uri_path):
         else:
             # Leave it alone; proceed to the next component.
             i += 1
-    
+
     return "/" + "/".join(components)
+
 
 def normalize_query_parameters(query_string):
     """
@@ -524,7 +593,7 @@ def normalize_query_parameters(query_string):
         if component == "":
             # Empty component; skip it.
             continue
-        
+
         key = normalize_uri_path_component(key)
         value = normalize_uri_path_component(value)
 
@@ -533,8 +602,8 @@ def normalize_query_parameters(query_string):
         else:
             result[key] = [value]
 
-    return dict([(key, sorted(values))
-                 for key, values in iteritems(result)])
+    return dict([(key, sorted(values)) for key, values in iteritems(result)])
+
 
 # Local variables:
 # mode: Python

@@ -1,4 +1,7 @@
 from app.storage.storage import Storage
-from app.storage.telegram import TelegramAccountStorage, TelegramBotStorage
+from app.storage.telegram import (  # noqa: F401
+    TelegramAccountStorage,
+    TelegramBotStorage,
+)
 
-storage: Storage = TelegramAccountStorage()
+storage: Storage = TelegramBotStorage()
