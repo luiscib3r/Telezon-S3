@@ -1,14 +1,17 @@
-FROM python:3.8
+FROM python:3.12-alpine
 
-COPY poetry.lock /
-COPY pyproject.toml .
-RUN pip install poetry && \
-    poetry config settings.virtualenvs.create false && \
-    poetry install
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    make
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 COPY . /
 
-# Not expose for heroku deploy
-# EXPOSE 8000
+EXPOSE 8000
 
-CMD gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+CMD ["fastapi", "run", "--workers", "4", "app/main.py"]

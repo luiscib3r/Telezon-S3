@@ -15,3 +15,11 @@ run:
 .PHONY: setup_bot_storage
 setup_bot_storage:
 	poetry run python setup_bot_storage.py
+
+.PHONY: setup_account_storage
+setup_account_storage:
+	poetry run python setup_account_storage.py
+
+.PHONY: export
+export:
+	poetry export -f requirements.txt --output requirements.txt

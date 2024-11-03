@@ -1,0 +1,6 @@
+venv/
+*.pyc
+.vscode/
+.idea/
+.env
+*.session
