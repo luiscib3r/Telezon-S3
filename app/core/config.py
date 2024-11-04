@@ -1,32 +1,40 @@
 import os
+
+import uvicorn
 from dotenv import load_dotenv
 
 load_dotenv()
 
-ENVIRONMENT = os.getenv('ENVIRONMENT')
-PROJECT_NAME = os.getenv('PROJECT_NAME')
-PORT = int(os.getenv('PORT'))
+logger = uvicorn.logging.logging.getLogger("uvicorn")
 
-SECRET_KEY = os.getenv('SECRET_KEY')
 
-MONGO_HOST = os.getenv('MONGO_HOST')
-MONGO_PORT = os.getenv('MONGO_PORT')
-MONGO_USER = os.getenv('MONGO_USER')
-MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
+# ENVIRONMENT = os.getenv("ENVIRONMENT")
+PROJECT_NAME = os.getenv("PROJECT_NAME")
+PORT = int(os.getenv("PORT"))
 
-DATABASE_NAME = os.getenv('DATABASE_NAME')
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-DATABASE_URL = os.getenv(
-    'DATABASE_URL'
-) or f'mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/{DATABASE_NAME}'
+MONGO_HOST = os.getenv("MONGO_HOST")
+MONGO_PORT = os.getenv("MONGO_PORT")
+MONGO_USER = os.getenv("MONGO_USER")
+MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
 
-DEVELOPMENT_DATABASE = f'mongodb://127.0.0.1:27017/{DATABASE_NAME}'
+DATABASE_NAME = os.getenv("DATABASE_NAME")
 
-API_KEY = os.getenv('API_KEY')
+if MONGO_USER and MONGO_PASSWORD:
+    AUTH_URL = f"{MONGO_USER}:{MONGO_PASSWORD}@"
+else:
+    AUTH_URL = ""
 
-TOKEN = os.getenv('BOT_TOKEN')
-CID = os.getenv('CID')
+DATABASE_URL = (
+    os.getenv("DATABASE_URL") or f"mongodb://{AUTH_URL}{MONGO_HOST}:{MONGO_PORT}"
+)
 
-TELEGRAM_API_ID = os.getenv('TELEGRAM_API_ID')
-TELEGRAM_API_HASH = os.getenv('TELEGRAM_API_HASH')
-SESSION_STRING = os.getenv('SESSION_STRING')
+API_KEY = os.getenv("API_KEY")
+
+TOKEN = os.getenv("BOT_TOKEN")
+CID = os.getenv("CID")
+
+TELEGRAM_API_ID = os.getenv("TELEGRAM_API_ID")
+TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH")
+SESSION_STRING = os.getenv("SESSION_STRING")

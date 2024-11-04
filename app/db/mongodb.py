@@ -1,13 +1,6 @@
-import os
 from motor.motor_asyncio import AsyncIOMotorClient
-from app.core.config import DEVELOPMENT_DATABASE, DATABASE_URL, ENVIRONMENT
 
-MONGODB_URL = ''
-
-if ENVIRONMENT == 'production':
-    MONGODB_URL = DATABASE_URL
-else:
-    MONGODB_URL = DEVELOPMENT_DATABASE
+from app.core.config import DATABASE_URL, logger
 
 
 class Database:
@@ -22,8 +15,10 @@ async def get_database() -> AsyncIOMotorClient:
 
 
 async def connect_to_mongodb():
-    db.client = AsyncIOMotorClient(MONGODB_URL)
+    db.client = AsyncIOMotorClient(DATABASE_URL)
+    logger.info("Connected to MongoDB")
 
 
 async def close_mongodb_connection():
-    await db.client.close()
+    db.client.close()
+    logger.info("Disconnected from MongoDB")

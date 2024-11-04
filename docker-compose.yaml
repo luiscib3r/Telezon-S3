@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@db:27017
+    depends_on:
+      - db

@@ -10,7 +10,9 @@ from app.crud.user import crud_get_user_by_username, crud_get_user_by_email
 
 
 async def check_free_username_and_email(
-        conn: AsyncIOMotorClient, username: Optional[str] = None, email: Optional[EmailStr] = None
+    conn: AsyncIOMotorClient,
+    username: Optional[str] = None,
+    email: Optional[EmailStr] = None,
 ):
     if username:
         user_by_username = await crud_get_user_by_username(conn, username)
