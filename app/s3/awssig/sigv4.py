@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import hmac
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from io import BytesIO
 from re import compile as re_compile
@@ -438,7 +438,7 @@ class AWSSigV4Verifier(object):
                 second = int(m.group("second"))
 
                 req_ts = datetime(year, month, day, hour, minute, second)
-                now = datetime.utcnow()
+                now = datetime.now(UTC)
 
                 if abs(req_ts - now) > timedelta(0, self.timestamp_mismatch):
                     raise InvalidSignatureError("Timestamp mismatch")
@@ -524,7 +524,7 @@ def get_canonical_uri_path(uri_path):
     * An invalid percent-encoding is encountered.
     """
     # Special case: empty path is converted to '/'
-    if uri_path == "" or uri_path == "/":
+    if uri_path in ("", "/"):
         return "/"
 
     # All other paths must be absolute.
@@ -602,7 +602,7 @@ def normalize_query_parameters(query_string):
         else:
             result[key] = [value]
 
-    return dict([(key, sorted(values)) for key, values in iteritems(result)])
+    return {key: sorted(values) for key, values in iteritems(result)}
 
 
 # Local variables:

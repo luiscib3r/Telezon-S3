@@ -6,7 +6,8 @@ from app.s3.awssig import AWSSigV4Verifier, InvalidSignatureError
 
 async def aws_sig_verify(bucket: Bucket, request: Request):
     body = await request.body()
-    headers = dict(**request.headers)
+
+    headers = {**request.headers}
     headers["X-Amz-Date"] = headers.get("x-amz-date", "")
     path = str(request.url).replace(str(request.base_url), "/")
 
