@@ -22,6 +22,14 @@ docker-compose up -d
 
 El servicio estará disponible en `http://localhost:8000`
 
+## Documentación de la API
+
+La documentación interactiva de la API está disponible a través de Swagger UI. Puedes acceder a ella en:
+
+```
+http://localhost:8000/docs
+```
+
 ## Requisitos para desarrollo
 
 - Python 3.12+
@@ -61,6 +69,17 @@ TELEGRAM_API_ID=your_api_id
 TELEGRAM_API_HASH=your_api_hash
 SESSION_STRING=your_session_string
 ```
+
+### Variables de Entorno para Usuario Administrador
+
+El sistema permite configurar un usuario administrador inicial a través de variables de entorno:
+
+```env
+INITIAL_ADMIN_USER=admin
+INITIAL_ADMIN_PASSWORD=admin
+```
+
+Estas credenciales se utilizarán para crear automáticamente el primer usuario administrador en el sistema durante la inicialización de la base de datos.
 
 ## Desarrollo
 
