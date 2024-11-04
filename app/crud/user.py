@@ -8,7 +8,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.status import HTTP_404_NOT_FOUND
 
 from app.core.config import DATABASE_NAME
-from app.models.user import UserFilterParams, UserInCreate, UserInDb, UserInUpdate
+from app.models.user import (
+    ADMIN_ROLE,
+    USER_ROLE,
+    UserFilterParams,
+    UserInCreate,
+    UserInDb,
+    UserInUpdate,
+)
 
 COLLECTION = "users"
 
@@ -60,8 +67,15 @@ async def crud_get_user_by_access_key_id(
         return UserInDb(**row)
 
 
-async def crud_create_user(db: AsyncIOMotorClient, user: UserInCreate) -> UserInDb:
+async def crud_create_user(
+    db: AsyncIOMotorClient, user: UserInCreate, admin=False
+) -> UserInDb:
     data_user = UserInDb(**user.model_dump())
+    if admin:
+        data_user.role = ADMIN_ROLE
+    else:
+        data_user.role = USER_ROLE
+
     data_user.change_password(user.password)
 
     if not data_user.access_key_id:
