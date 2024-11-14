@@ -172,6 +172,11 @@ poetry run python download_file.py \
 
 Contributions are welcome. Please open an issue to discuss proposed changes.
 
+## Important note about scalability:
+
+For high-traffic projects, Telegram's limitations might eventually become a bottleneck that can't be circumvented. In such cases, I'd recommend using actual S3 or another storage solution specifically designed for high-concurrency file serving.
+This project works great for personal/small deployments, but it's important to acknowledge its limitations for production environments with high demand.
+
 ## License
 
 MIT
