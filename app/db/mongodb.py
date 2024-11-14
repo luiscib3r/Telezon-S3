@@ -8,8 +8,10 @@ from app.core.config import (
     INITIAL_ADMIN_USER,
     logger,
 )
+from app.crud.bucket import crud_create_bucket
 from app.crud.user import crud_create_user
-from app.models.user import UserInCreate
+from app.models.bucket import BucketInCreate
+from app.models.user import User, UserInCreate
 
 
 class Database:
@@ -45,10 +47,14 @@ async def init_db():
                 email="admin@telezon.dev",
             )
 
-            await crud_create_user(db.client, user, admin=True)
+            admin_user = await crud_create_user(db.client, user, admin=True)
             logger.info("Admin user created")
             logger.info("Admin user: %s", INITIAL_ADMIN_USER)
             logger.info("Your bucket is the same as your username")
+            bucket = BucketInCreate(
+                name=admin_user.username, owner_username=admin_user.username
+            )
+            await crud_create_bucket(db.client, bucket, User(**admin_user.model_dump()))
 
 
 async def connect_to_mongodb():

@@ -1,6 +1,4 @@
 import io
-import os
-import tempfile
 
 from pyrogram import Client
 
@@ -28,7 +26,7 @@ class TelegramAccountStorage(Storage):
             return str(response.document.file_id)
 
     async def get_file(self, file_id: str) -> io.BufferedReader:
-        file_name = os.path.join(tempfile.gettempdir(), f"telezon_{file_id}")
         async with self.client() as app:
-            await app.download_media(file_id, file_name)
-            return open(file_name, "rb")
+            file = await app.download_media(file_id, in_memory=True)
+            file.seek(0)
+            return file

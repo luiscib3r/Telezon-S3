@@ -17,7 +17,7 @@ def main(
         endpoint_url=s3_url,
     )
 
-    s3.upload_file(input_path, bucket_name, output_path)
+    s3.download_file(bucket_name, input_path, output_path)
 
 
 if __name__ == "__main__":

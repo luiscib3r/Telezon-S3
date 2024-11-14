@@ -130,9 +130,9 @@ s3.upload_file('local_file.txt', 'bucket_name', 'destination_name.txt')
 s3.download_file('bucket_name', 'destination_name.txt', 'downloaded_file.txt')
 ```
 
-### Quick Upload Script
+### Quick Upload and Download Script
 
-The project includes a utility script for uploading files:
+The project includes utility scripts for uploading and downloading files:
 
 ```bash
 poetry run python upload_file.py \
@@ -141,6 +141,15 @@ poetry run python upload_file.py \
  --bucket-name bucket_name \
  --input-path local_file.txt \
  --output-path destination_name.txt
+```
+
+```bash
+poetry run python download_file.py \
+ --access-key-id your_access_key_id \
+ --secret-key your_secret_key \
+ --bucket-name bucket_name \
+ --input-path remote_file.txt \
+ --output-path local_destination_file.txt
 ```
 
 ## Available Make Commands
